@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t netra/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true netra/react-test npm test 
+
+after_success:
+  - dokcer build -t netra/multi-client ./client
+  - docker build -t netra/multi-server ./server
+  - docker build -t netra/multi-nginx ./nginx
+  - docker build -t netra/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push netra/multi-client 
+  - docker push  netra/multi-server
+  - docker push netra/multi-nginx
+  - docker push netra/multi-worker
+  
